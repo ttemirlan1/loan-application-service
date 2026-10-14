@@ -1,6 +1,10 @@
 spring:
   application:
     name: loan-application-service
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
 
   datasource:
     url: ${SPRING_DATASOURCE_URL}
