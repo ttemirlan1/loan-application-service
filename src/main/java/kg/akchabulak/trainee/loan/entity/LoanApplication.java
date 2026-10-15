@@ -1,4 +1,9 @@
+package kg.akchabulak.trainee.loan.entity;
 import jakarta.persistence.*;
+import kg.akchabulak.trainee.loan.enums.LoanApplicationStatus;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -19,6 +24,9 @@ import java.time.LocalDateTime;
                 )
         }
 )
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class LoanApplication {
 
     @Id
@@ -58,8 +66,4 @@ public class LoanApplication {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    protected LoanApplication() {
-    }
-
-    // Добавь необходимые getters и setters
 }
