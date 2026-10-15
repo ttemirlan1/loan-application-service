@@ -63,4 +63,10 @@ public class LoanApplicationController {
                 service.getAll(status, clientPin, page, size)
         );
     }
+    @PatchMapping("/{id}/cancel")
+    public ResponseEntity<LoanApplicationResponseDto> cancel(
+            @PathVariable Long id) {
+
+        return ResponseEntity.ok(service.cancel(id));
+    }
 }

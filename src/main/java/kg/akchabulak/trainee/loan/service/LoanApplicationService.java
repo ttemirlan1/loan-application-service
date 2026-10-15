@@ -6,6 +6,7 @@ import kg.akchabulak.trainee.loan.entity.LoanApplication;
 import kg.akchabulak.trainee.loan.enums.LoanApplicationStatus;
 import kg.akchabulak.trainee.loan.mapper.LoanApplicationMapper;
 import kg.akchabulak.trainee.loan.repository.LoanApplicationRepository;
+import kg.akchabulak.trainee.loan.validator.LoanStatusTransitionValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,6 +30,7 @@ public class LoanApplicationService {
     private final LoanApplicationRepository repository;
     private final LoanApplicationMapper mapper;
 
+    private final LoanStatusTransitionValidator transitionValidator;
     private static final List<LoanApplicationStatus> ACTIVE_STATUSES =
             List.of(
                     LoanApplicationStatus.NEW,
@@ -106,5 +108,22 @@ public class LoanApplicationService {
         return repository.findAll(specification, pageable)
                 .map(mapper::toResponseDto);
     }
+    @Transactional
+    public LoanApplicationResponseDto cancel(Long id) {
 
+        LoanApplication application = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Заявка не найдена: " + id
+                ));
+
+        transitionValidator.validate(
+                application.getStatus(),
+                LoanApplicationStatus.CANCELLED
+        );
+
+        application.setStatus(LoanApplicationStatus.CANCELLED);
+
+        return mapper.toResponseDto(application);
+    }
 }
