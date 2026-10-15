@@ -4,6 +4,7 @@ import kg.akchabulak.trainee.loan.dto.CreateLoanApplicationRequestDto;
 import kg.akchabulak.trainee.loan.dto.LoanApplicationResponseDto;
 import kg.akchabulak.trainee.loan.entity.LoanApplication;
 import kg.akchabulak.trainee.loan.enums.LoanApplicationStatus;
+import kg.akchabulak.trainee.loan.mapper.LoanApplicationMapper;
 import kg.akchabulak.trainee.loan.repository.LoanApplicationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,8 +19,9 @@ import java.util.List;
 public class LoanApplicationService {
 
     private final LoanApplicationRepository repository;
+    private final LoanApplicationMapper mapper;
 
-    private static final List<LoanApplicationStatus> ACTIVE =
+    private static final List<LoanApplicationStatus> ACTIVE_STATUSES =
             List.of(
                     LoanApplicationStatus.NEW,
                     LoanApplicationStatus.IN_REVIEW
@@ -31,7 +33,7 @@ public class LoanApplicationService {
 
         boolean exists = repository.existsByClientPinAndStatusIn(
                 request.getClientPin(),
-                ACTIVE
+                ACTIVE_STATUSES
         );
 
         if (exists) {
@@ -41,17 +43,11 @@ public class LoanApplicationService {
             );
         }
 
-        LoanApplication application = new LoanApplication();
+        LoanApplication entity = mapper.toEntity(request);
+        entity.setStatus(LoanApplicationStatus.NEW);
+        LoanApplication saved = repository.save(entity);
+        return mapper.toResponseDto(saved);
 
-        application.setClientPin(request.getClientPin());
-        application.setClientFullName(request.getClientFullName());
-        application.setPhone(request.getPhone());
-        application.setAmount(request.getAmount());
-        application.setTermMonths(request.getTermMonths());
-        application.setMonthlyIncome(request.getMonthlyIncome());
-        application.setStatus(LoanApplicationStatus.NEW);
-
-        return toResponse(repository.save(application));
     }
 
     @Transactional(readOnly = true)
@@ -63,24 +59,7 @@ public class LoanApplicationService {
                         "Заявка не найдена"
                 ));
 
-        return toResponse(application);
+        return mapper.toResponseDto(application);
     }
 
-    private LoanApplicationResponseDto toResponse(
-            LoanApplication application) {
-
-        return new LoanApplicationResponseDto(
-                application.getId(),
-                application.getClientPin(),
-                application.getClientFullName(),
-                application.getPhone(),
-                application.getAmount(),
-                application.getTermMonths(),
-                application.getMonthlyIncome(),
-                application.getStatus(),
-                application.getRejectReason(),
-                application.getCreatedAt(),
-                application.getUpdatedAt()
-        );
-    }
 }
