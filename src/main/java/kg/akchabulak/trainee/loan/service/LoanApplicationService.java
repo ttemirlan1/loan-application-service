@@ -7,12 +7,20 @@ import kg.akchabulak.trainee.loan.enums.LoanApplicationStatus;
 import kg.akchabulak.trainee.loan.mapper.LoanApplicationMapper;
 import kg.akchabulak.trainee.loan.repository.LoanApplicationRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+
+import java.util.ArrayList;
 import java.util.List;
+import jakarta.persistence.criteria.Predicate;
 
 @Service
 @RequiredArgsConstructor
@@ -60,6 +68,43 @@ public class LoanApplicationService {
                 ));
 
         return mapper.toResponseDto(application);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<LoanApplicationResponseDto> getAll(
+            LoanApplicationStatus status,
+            String clientPin,
+            int page,
+            int size
+    ) {
+        Specification<LoanApplication> specification =
+                (root, query, cb) -> {
+
+                    List<Predicate> predicates = new ArrayList<>();
+
+                    if (status != null) {
+                        predicates.add(
+                                cb.equal(root.get("status"), status)
+                        );
+                    }
+
+                    if (clientPin != null && !clientPin.isBlank()) {
+                        predicates.add(
+                                cb.equal(root.get("clientPin"), clientPin)
+                        );
+                    }
+
+                    return cb.and(predicates.toArray(new Predicate[0]));
+                };
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(Sort.Direction.DESC, "createdAt")
+        );
+
+        return repository.findAll(specification, pageable)
+                .map(mapper::toResponseDto);
     }
 
 }
