@@ -7,9 +7,12 @@ import kg.akchabulak.trainee.loan.enums.LoanApplicationStatus;
 import kg.akchabulak.trainee.loan.exception.LoanApplicationConflictException;
 import kg.akchabulak.trainee.loan.exception.LoanApplicationNotFoundException;
 import kg.akchabulak.trainee.loan.mapper.LoanApplicationMapper;
+import kg.akchabulak.trainee.loan.messaging.dto.LoanScoringMessage;
+import kg.akchabulak.trainee.loan.messaging.event.LoanApplicationCreatedEvent;
 import kg.akchabulak.trainee.loan.repository.LoanApplicationRepository;
 import kg.akchabulak.trainee.loan.validator.LoanStatusTransitionValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +34,8 @@ public class LoanApplicationService {
 
     private final LoanApplicationRepository repository;
     private final LoanApplicationMapper mapper;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     private final LoanStatusTransitionValidator transitionValidator;
     private static final List<LoanApplicationStatus> ACTIVE_STATUSES =
@@ -57,6 +62,18 @@ public class LoanApplicationService {
         LoanApplication entity = mapper.toEntity(request);
         entity.setStatus(LoanApplicationStatus.NEW);
         LoanApplication saved = repository.save(entity);
+
+        // Создаём сообщение для скоринга
+        LoanScoringMessage message = new LoanScoringMessage(
+                saved.getId(),
+                saved.getClientPin()
+        );
+
+        // Публикуем внутреннее событие Spring
+        eventPublisher.publishEvent(
+                new LoanApplicationCreatedEvent(message)
+        );
+        // Возвращаем DTO как раньше
         return mapper.toResponseDto(saved);
 
     }
@@ -126,4 +143,5 @@ public class LoanApplicationService {
 
         return mapper.toResponseDto(application);
     }
+
 }
