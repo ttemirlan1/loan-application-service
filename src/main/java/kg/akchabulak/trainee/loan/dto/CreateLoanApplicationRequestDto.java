@@ -15,8 +15,11 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class CreateLoanApplicationRequestDto {
 
-    @NotBlank
-    @Pattern(regexp = "\\d{14}")
+    @NotBlank(message = "ПИН клиента обязателен")
+    @Pattern(
+            regexp = "\\d{14}",
+            message = "ПИН должен содержать 14 цифр"
+    )
     private String clientPin;
 
     @NotBlank
@@ -24,9 +27,12 @@ public class CreateLoanApplicationRequestDto {
 
     @NotBlank
     private String phone;
-    
-    @NotNull
-    @DecimalMin("1000")
+
+    @NotNull(message = "Сумма кредита обязательна")
+    @DecimalMin(
+            value = "0.01",
+            message = "Сумма кредита должна быть больше нуля"
+    )
     private BigDecimal amount;
 
     @NotNull

@@ -1,6 +1,7 @@
 package kg.akchabulak.trainee.loan.validator;
 
 import kg.akchabulak.trainee.loan.enums.LoanApplicationStatus;
+import kg.akchabulak.trainee.loan.exception.LoanApplicationConflictException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
@@ -40,10 +41,9 @@ public class LoanStatusTransitionValidator {
                 );
 
         if (!allowed.contains(newStatus)) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
+            throw new LoanApplicationConflictException(
                     "Недопустимый переход статуса: "
-                            + currentStatus + " -> " + newStatus
+                            + currentStatus + " -> " + currentStatus
             );
         }
     }

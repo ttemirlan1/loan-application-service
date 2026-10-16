@@ -4,6 +4,8 @@ import kg.akchabulak.trainee.loan.dto.CreateLoanApplicationRequestDto;
 import kg.akchabulak.trainee.loan.dto.LoanApplicationResponseDto;
 import kg.akchabulak.trainee.loan.entity.LoanApplication;
 import kg.akchabulak.trainee.loan.enums.LoanApplicationStatus;
+import kg.akchabulak.trainee.loan.exception.LoanApplicationConflictException;
+import kg.akchabulak.trainee.loan.exception.LoanApplicationNotFoundException;
 import kg.akchabulak.trainee.loan.mapper.LoanApplicationMapper;
 import kg.akchabulak.trainee.loan.repository.LoanApplicationRepository;
 import kg.akchabulak.trainee.loan.validator.LoanStatusTransitionValidator;
@@ -47,8 +49,7 @@ public class LoanApplicationService {
         );
 
         if (exists) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
+            throw new LoanApplicationConflictException(
                     "У клиента уже есть активная заявка"
             );
         }
@@ -64,10 +65,9 @@ public class LoanApplicationService {
     public LoanApplicationResponseDto getById(Long id) {
 
         LoanApplication application = repository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Заявка не найдена"
-                ));
+                .orElseThrow(
+                        () -> new LoanApplicationNotFoundException(id)
+                );
 
         return mapper.toResponseDto(application);
     }
