@@ -43,7 +43,7 @@ public class LoanStatusTransitionValidator {
         if (!allowed.contains(newStatus)) {
             throw new LoanApplicationConflictException(
                     "Недопустимый переход статуса: "
-                            + currentStatus + " -> " + currentStatus
+                            + currentStatus + " -> " + newStatus
             );
         }
     }
