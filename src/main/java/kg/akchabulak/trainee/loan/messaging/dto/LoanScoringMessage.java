@@ -1,17 +1,16 @@
 package kg.akchabulak.trainee.loan.messaging.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
+import java.math.BigDecimal;
+
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoanScoringMessage {
 
     private Long applicationId;
-
-    private String clientPin;
+    private BigDecimal amount;
+    private Integer termMonths;
+    private BigDecimal monthlyIncome;
 }

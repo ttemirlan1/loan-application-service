@@ -1,6 +1,7 @@
 package kg.akchabulak.trainee.loan.messaging.publisher;
 
 import kg.akchabulak.trainee.loan.config.RabbitMqConfig;
+import kg.akchabulak.trainee.loan.entity.LoanApplication;
 import kg.akchabulak.trainee.loan.messaging.dto.LoanScoringMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -66,14 +66,16 @@ public class LoanApplicationService {
         // Создаём сообщение для скоринга
         LoanScoringMessage message = new LoanScoringMessage(
                 saved.getId(),
-                saved.getClientPin()
+                saved.getAmount(),
+                saved.getTermMonths(),
+                saved.getMonthlyIncome()
         );
 
         // Публикуем внутреннее событие Spring
         eventPublisher.publishEvent(
                 new LoanApplicationCreatedEvent(message)
         );
-        // Возвращаем DTO как раньше
+        // Возвращаем DTO
         return mapper.toResponseDto(saved);
 
     }
