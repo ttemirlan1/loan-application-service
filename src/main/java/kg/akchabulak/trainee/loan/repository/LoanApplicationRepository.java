@@ -8,7 +8,9 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface LoanApplicationRepository
@@ -23,5 +25,11 @@ public interface LoanApplicationRepository
     @Query("SELECT l FROM LoanApplication l WHERE l.id = :id")
     Optional<LoanApplication> findByIdForUpdate(
             @Param("id") Long id
+    );
+
+    List<LoanApplication>
+    findTop100ByStatusAndCreatedAtBeforeOrderByCreatedAtAsc(
+            LoanApplicationStatus status,
+            LocalDateTime createdAt
     );
 }

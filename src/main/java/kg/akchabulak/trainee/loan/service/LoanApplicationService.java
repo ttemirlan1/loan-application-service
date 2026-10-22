@@ -130,7 +130,7 @@ public class LoanApplicationService {
     @Transactional
     public LoanApplicationResponseDto cancel(Long id) {
 
-        LoanApplication application = repository.findById(id)
+        LoanApplication application = repository.findByIdForUpdate(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Заявка не найдена: " + id

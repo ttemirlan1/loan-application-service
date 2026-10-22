@@ -1,9 +1,6 @@
 package kg.akchabulak.trainee.loan.dto;
 
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,18 +23,24 @@ public class CreateLoanApplicationRequestDto {
     private String clientFullName;
 
     @NotBlank
+    @Pattern(
+            regexp = "\\+996\\d{9}",
+            message = "Телефон должен быть в формате +996XXXXXXXXX"
+    )
     private String phone;
 
-    @NotNull(message = "Сумма кредита обязательна")
-    @DecimalMin(
-            value = "0.01",
-            message = "Сумма кредита должна быть больше нуля"
-    )
+    @NotNull
+    @DecimalMin("0.01")
+    @Digits(integer = 13, fraction = 2)
     private BigDecimal amount;
 
     @NotNull
+    @Min(1)
+    @Max(60) // для примера макс 60 сделал
     private Integer termMonths;
 
     @NotNull
+    @Positive
+    @Digits(integer = 13, fraction = 2)
     private BigDecimal monthlyIncome;
 }
