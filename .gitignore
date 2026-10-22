@@ -32,7 +32,7 @@ build/
 .vscode/
 
 # Environment variables
-.env
+
 
 # Logs
 *.log

@@ -1,0 +1,92 @@
+### IntelliJ IDEA HTTP Client
+### Перед повторными прогонами меняйте clientPin: заявки сохраняются в PostgreSQL.
+@baseUrl = http://localhost:8080
+
+### 1. Health
+GET {{baseUrl}}/actuator/health
+
+### 2. Создать заявку — ожидается 201 Created и Location
+POST {{baseUrl}}/api/v1/loan-applications
+Content-Type: application/json
+
+{
+  "clientPin": "12345678901234",
+  "clientFullName": "Иванов Иван Иванович",
+  "phone": "+996700123456",
+  "amount": 120000.00,
+  "termMonths": 12,
+  "monthlyIncome": 30000.00
+}
+
+> {%
+    client.test("Заявка создана", function() {
+        client.assert(response.status === 201, "Ожидался статус 201");
+    });
+    client.global.set("createdApplicationId", response.body.id);
+%}
+
+### 3. Получить только что созданную заявку — 200 OK
+### При включённом consumer статус уже может быть APPROVED или REJECTED.
+GET {{baseUrl}}/api/v1/loan-applications/{{createdApplicationId}}
+
+### 4. Список с пагинацией — 200 OK
+GET {{baseUrl}}/api/v1/loan-applications?page=0&size=20
+
+### 5. Список с фильтром по статусу — 200 OK
+GET {{baseUrl}}/api/v1/loan-applications?status=APPROVED&page=0&size=10
+
+### 6. Список с фильтром по ПИН — 200 OK
+GET {{baseUrl}}/api/v1/loan-applications?clientPin=12345678901234&page=0&size=10
+
+### 7. Проверка отклонения скорингом (сумма выше max-amount=300000)
+POST {{baseUrl}}/api/v1/loan-applications
+Content-Type: application/json
+
+{
+  "clientPin": "12345678901235",
+  "clientFullName": "Петров Петр Петрович",
+  "phone": "+996700654321",
+  "amount": 350000.00,
+  "termMonths": 12,
+  "monthlyIncome": 50000.00
+}
+
+> {% client.global.set("rejectedApplicationId", response.body.id); %}
+
+### 8. Проверка результата скоринга (выполнить после обработки consumer)
+GET {{baseUrl}}/api/v1/loan-applications/{{rejectedApplicationId}}
+
+### 9. Ошибка валидации ПИН — 400 Bad Request
+POST {{baseUrl}}/api/v1/loan-applications
+Content-Type: application/json
+
+{
+  "clientPin": "123",
+  "clientFullName": "Тест Ошибки",
+  "phone": "+996700000000",
+  "amount": 120000.00,
+  "termMonths": 12,
+  "monthlyIncome": 30000.00
+}
+
+### 10. Несуществующая заявка — 404 Not Found
+GET {{baseUrl}}/api/v1/loan-applications/999999999
+
+### 11. Отмена: замените ID на заявку в статусе, из которого отмена разрешена
+### ВАЖНО: при быстром скоринге NEW/IN_REVIEW может сразу перейти в конечный статус.
+@cancelId = 1
+PATCH {{baseUrl}}/api/v1/loan-applications/{{cancelId}}/cancel
+
+### 12. Повторное создание клиента из шага 2.
+### 409 ожидается только если у клиента ещё есть активная заявка (NEW/IN_REVIEW).
+POST {{baseUrl}}/api/v1/loan-applications
+Content-Type: application/json
+
+{
+  "clientPin": "12345678901234",
+  "clientFullName": "Теашбалтаев Темирлан Анарбекович",
+  "phone": "+996702001227",
+  "amount": 120000.00,
+  "termMonths": 12,
+  "monthlyIncome": 30000.00
+}

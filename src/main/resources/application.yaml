@@ -16,3 +16,18 @@ spring:
     port: ${SPRING_RABBITMQ_PORT:5672}
     username: ${SPRING_RABBITMQ_USERNAME}
     password: ${SPRING_RABBITMQ_PASSWORD}
+    listener:
+      simple:
+        retry:
+          enabled: true
+          initial-interval: 1000
+          multiplier: 2.0
+          max-interval: 10000
+          max-retries: 3
+        default-requeue-rejected: false
+loan:
+  scoring:
+    max-amount: 300000
+    max-payment-income-ratio: 0.5
+    retry:
+      fixed-delay-ms: 60000
